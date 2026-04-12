@@ -1,0 +1,9 @@
+.idea/
+db.sqlite3
+__pycache__/
+.Python
+env/
+venv/
+.venv/
+build/
+dist/

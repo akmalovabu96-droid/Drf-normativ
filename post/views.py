@@ -1,8 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
 from .models import Post
-from .serializer import PostSerializer
+from .serializer import PostSerializer, LoginSerializer, RegisterSerializer
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
+from django.contrib.auth import authenticate, login, logout
 
 
 class PostListCreateAPIView(APIView):
@@ -61,3 +63,61 @@ class PostDetailAPIView(APIView):
 
         post.delete()
         return Response({"message": "Post o‘chirildi"}, status=204)
+
+
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class RegisterAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "User yaratildi"},
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(serializer.errors, status=400)
+
+
+class LoginAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            password = serializer.validated_data['password']
+
+            user = authenticate(
+                request,
+                username=username,
+                password=password
+            )
+
+            if user:
+                login(request, user)
+                return Response({"message": "Tizimga kirdingiz!"})
+
+            return Response(
+                {"error": "Login yoki parol noto‘g‘ri"},
+                status=401
+            )
+
+        return Response(serializer.errors, status=400)
+
+
+class LogoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        logout(request)
+        return Response({"message": "Logout qildingiz"})

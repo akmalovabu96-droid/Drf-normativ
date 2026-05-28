@@ -4,8 +4,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
 from .models import Post
+from .permission import IsOwnerOrReadOnly
 from .serializer import PostSerializer, LoginSerializer, RegisterSerializer
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import authenticate, login, logout
 
 
@@ -71,7 +72,7 @@ class PostDetailAPIView(APIView):
 class PostViewSet(ModelViewSet):
     queryset = Post.objects.all().order_by('-created_at')
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsOwnerOrReadOnly]
 
     # FILTER
     filterset_fields = [
@@ -91,6 +92,8 @@ class PostViewSet(ModelViewSet):
         'title'
     ]
 
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 class RegisterAPIView(APIView):
     permission_classes = [AllowAny]

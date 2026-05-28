@@ -1,6 +1,8 @@
+# from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, viewsets
+from rest_framework import status
+from rest_framework.viewsets import ModelViewSet
 from .models import Post
 from .serializer import PostSerializer, LoginSerializer, RegisterSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
@@ -65,10 +67,29 @@ class PostDetailAPIView(APIView):
         return Response({"message": "Post o‘chirildi"}, status=204)
 
 
-class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
+
+class PostViewSet(ModelViewSet):
+    queryset = Post.objects.all().order_by('-created_at')
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+
+    # FILTER
+    filterset_fields = [
+        'title',
+        'created_at'
+    ]
+
+    # SEARCH
+    search_fields = [
+        'title',
+        'description'
+    ]
+
+    # ORDERING
+    ordering_fields = [
+        'created_at',
+        'title'
+    ]
 
 
 class RegisterAPIView(APIView):
@@ -106,6 +127,11 @@ class LoginAPIView(APIView):
             if user:
                 login(request, user)
                 return Response({"message": "Tizimga kirdingiz!"})
+            # if user:
+            #     token, created = Token.objects.get_or_create(user=user)
+            #     return Response({
+            #         "token": token.key
+            #     })
 
             return Response(
                 {"error": "Login yoki parol noto‘g‘ri"},

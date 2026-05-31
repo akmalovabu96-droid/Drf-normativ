@@ -1,4 +1,4 @@
-# from rest_framework.authtoken.models import Token
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -6,7 +6,7 @@ from rest_framework.viewsets import ModelViewSet
 from .models import Post
 from .permission import IsOwnerOrReadOnly
 from .serializer import PostSerializer, LoginSerializer, RegisterSerializer
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from django.contrib.auth import authenticate, login, logout
 
 
@@ -68,11 +68,18 @@ class PostDetailAPIView(APIView):
         return Response({"message": "Post o‘chirildi"}, status=204)
 
 
+# class CsrfExemptSessionAuthentication(SessionAuthentication):
+#     def enforce_csrf(self, request):
+#         return  # CSRF tekshiruvini o'tkazib yuboradi
+
 
 class PostViewSet(ModelViewSet):
     queryset = Post.objects.all().order_by('-created_at')
     serializer_class = PostSerializer
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [
+        IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly
+    ]
 
     # FILTER
     filterset_fields = [
@@ -130,11 +137,6 @@ class LoginAPIView(APIView):
             if user:
                 login(request, user)
                 return Response({"message": "Tizimga kirdingiz!"})
-            # if user:
-            #     token, created = Token.objects.get_or_create(user=user)
-            #     return Response({
-            #         "token": token.key
-            #     })
 
             return Response(
                 {"error": "Login yoki parol noto‘g‘ri"},

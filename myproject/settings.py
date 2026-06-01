@@ -76,6 +76,19 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 3,
 }
 
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": "Bearer <JWT_TOKEN>",
+        },
+    },
+    "DOC_EXPANSION": False,  # yopiq holda ochilsin
+    "USE_SESSION_AUTH": False,
+}
+
 ROOT_URLCONF = 'myproject.urls'
 
 TEMPLATES = [

@@ -74,8 +74,13 @@ class PostDetailAPIView(APIView):
 
 
 class PostViewSet(ModelViewSet):
-    queryset = Post.objects.all().order_by('-created_at')
+    queryset = (
+        Post.objects
+        .select_related('user')
+        .order_by('-created_at')
+    )
     serializer_class = PostSerializer
+
     permission_classes = [
         IsAuthenticatedOrReadOnly,
         IsOwnerOrReadOnly

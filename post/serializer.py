@@ -5,25 +5,20 @@ from django.contrib.auth.models import User
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = [
-            'title',
-            'description'
-        ]
+        fields = '__all__'
+        read_only_fields = ['user']
 
     def validate_title(self, value):
         if not value.strip():
             raise serializers.ValidationError("Sarlavha bo'sh bo'lishi mumkin emas!")
         return value
 
-    def validate(self, data):
-        description = data.get("description", "")
-
-        if len(description) < 8:
+    def validate_description(self, value):
+        if len(value) < 10:
             raise serializers.ValidationError(
                 "Kontent kamida 8 belgidan iborat bo'lishi shart."
             )
-
-        return data
+        return value
 
 class RegisterSerializer(serializers.Serializer):
     username = serializers.CharField()

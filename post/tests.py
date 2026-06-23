@@ -4,7 +4,6 @@ from rest_framework.authtoken.models import Token
 from rest_framework import status
 from post.serializer import PostSerializer
 from .models import Post
-
 # Create your tests here.
 
 class PostAPITest(APITestCase):

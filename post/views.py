@@ -1,4 +1,3 @@
-#from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -8,6 +7,10 @@ from .permission import IsOwnerOrReadOnly
 from .serializer import PostSerializer, LoginSerializer, RegisterSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from django.contrib.auth import authenticate, login, logout
+from .throttles import PostCreateThrottle
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.core.cache import cache
 
 
 class PostListCreateAPIView(APIView):
@@ -104,8 +107,38 @@ class PostViewSet(ModelViewSet):
         'title'
     ]
 
+    def get_throttles(self):
+        if self.action == 'create':
+            return [PostCreateThrottle()]
+
+        return super().get_throttles()
+
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save(
+            user=self.request.user
+        )
+
+        cache.clear()
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+        cache.clear()
+
+    # Caching
+    @method_decorator(cache_page(60))
+    def list(self, request, *args, **kwargs):
+        print("DATABASE HIT")
+        return super().list(
+            request,
+            *args,
+            **kwargs
+        )
+
+    def perform_destroy(self, instance):
+        instance.delete()
+
+        cache.clear()
 
 class RegisterAPIView(APIView):
     permission_classes = [AllowAny]

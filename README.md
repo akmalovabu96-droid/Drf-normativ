@@ -69,7 +69,7 @@ A Django REST Framework project built to practice and demonstrate modern backend
 | POST   | `/api/token/`     | Obtain DRF Token        |
 | POST   | `/token/`         | Obtain JWT Access Token |
 | POST   | `/token/refresh/` | Refresh JWT Token       |
-| POST   | `swagger/`        | JWT aut settings        |
+| POST   | `swagger/`        | JWT auth settings       |
 
 ### Posts
 
